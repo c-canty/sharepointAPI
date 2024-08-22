@@ -4,6 +4,20 @@ import os
 access_token = ''
 sheet_id = 6288161969753988  
 base_download_path = r'C:\\Users\\ChristianCanty\\Documents\\ProdApp\\SavedImages\\'  # base download folder
+column_dict = {}
+
+def get_columns(sheet_id):
+    url = f"https://api.smartsheet.com/2.0/sheets/{sheet_id}"
+    headers = {
+        'Authorization': f'Bearer {access_token}'
+    }
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    data = response.json()
+    columns = data['columns']
+    for column in columns:
+        column_dict[column['title']] = column['id']
+
 
 def get_attachments(sheet_id, row_id):
     url = f"https://api.smartsheet.com/2.0/sheets/{sheet_id}?include=attachments"
@@ -37,7 +51,7 @@ def get_sheet_data(sheet_id):
     response.raise_for_status()
     return response.json()
 
-def get_cell_value(row_data, column_id=5190131364614020):
+def get_cell_value(row_data, column_id=5190131364614020): # Address column ID
     for cell in row_data['cells']:
         if cell['columnId'] == column_id:
             return cell.get('value', None)
@@ -56,13 +70,11 @@ def download_and_save_attachments():
         attachments = get_attachments(sheet_id, row_id)
         
         if not attachments:
-            print(f"No attachments found for row {row_id}.")
             continue
 
         # Get the folder name based on the cell value (e.g., address)
         folder_name = get_cell_value(row)
         if not folder_name:
-            print(f"No valid folder name found for row {row_id}.")
             continue
 
         # Create a folder using the cell value (e.g., address)
@@ -78,7 +90,6 @@ def download_and_save_attachments():
 
             # Check if the file already exists
             if os.path.exists(file_path):
-                print(f"File already exists: {file_path}. Skipping download.")
                 continue
             
             # Get the attachment details to find the download URL
@@ -86,7 +97,6 @@ def download_and_save_attachments():
             download_url = attachment_details.get('url')
 
             if not download_url:
-                print(f"Download URL not found for attachment ID {attachment_id}")
                 continue
             
             try:
@@ -98,9 +108,11 @@ def download_and_save_attachments():
                 with open(file_path, 'wb') as file:
                     file.write(response.content)
                 
-                print(f"Downloaded: {attachment_name} to {file_path}")
 
             except requests.exceptions.RequestException as e:
                 print(f"Request error occurred: {e}")
 
 download_and_save_attachments()
+
+get_columns(sheet_id)
+print(column_dict)
