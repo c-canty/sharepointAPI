@@ -2,7 +2,7 @@ import requests
 import os
 
 access_token = ''
-sheet_id = 6288161969753988  
+sheet_id = INT
 base_download_path = r'C:\\Users\\ChristianCanty\\Documents\\ProdApp\\SavedImages\\'  # base download folder
 column_dict = {}
 
@@ -62,6 +62,26 @@ def create_folder(folder_name, base_path):
     os.makedirs(folder_path, exist_ok=True)
     return folder_path
 
+def change_FilesSynced(sheet_id, row_id):
+    url = f"https://api.smartsheet.com/2.0/sheets/{sheet_id}/rows/{row_id}"
+    headers = {
+        'Authorization': f'Bearer {access_token}',
+        'Content-Type': 'application/json'
+    }
+    get_columns(sheet_id)
+    FilesSynced_id = column_dict['FilesSynced']
+    payload = {
+        'cells': [
+            {
+                'columnId': FilesSynced_id,
+                'value': True
+            }
+        ]
+    }
+    response = requests.put(url, headers=headers, json=payload)
+    response.raise_for_status()
+
+
 def download_and_save_attachments():
     sheet_data = get_sheet_data(sheet_id)
 
@@ -112,7 +132,12 @@ def download_and_save_attachments():
             except requests.exceptions.RequestException as e:
                 print(f"Request error occurred: {e}")
 
+        # Change the FilesSynced cell value to True
+        change_FilesSynced(sheet_id, row_id)
+    
+
+
 download_and_save_attachments()
 
 get_columns(sheet_id)
-print(column_dict)
+# print(column_dict)
