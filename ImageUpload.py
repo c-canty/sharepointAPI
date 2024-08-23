@@ -4,11 +4,11 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 access_token = ''
-sheet_id =  
+sheet_id = 
 base_download_path = r'C:\\Users\\ChristianCanty\\Documents\\ProdApp\\SavedImages\\'
 column_dict = {}
 
-def get_columns_and_data(sheet_id):
+def get_columns_and_data(sheet_id): # When I do this for real, I will set this to update once a minute
     url = f"https://api.smartsheet.com/2.0/sheets/{sheet_id}?include=attachments"
     headers = {
         'Authorization': f'Bearer {access_token}'
@@ -20,7 +20,7 @@ def get_columns_and_data(sheet_id):
         column_dict[column['title']] = column['id']
     return data
 
-def get_attachment_details(sheet_id, attachment_id):
+def get_attachment_details(sheet_id, attachment_id): # Shouls
     url = f"https://api.smartsheet.com/2.0/sheets/{sheet_id}/attachments/{attachment_id}"
     headers = {
         'Authorization': f'Bearer {access_token}'
@@ -95,7 +95,7 @@ def download_and_save_attachments():
     # Retrieve sheet data and columns in one API call
     sheet_data = get_columns_and_data(sheet_id)
 
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor: # Making the downloads asynchronous
         for row in sheet_data['rows']:
             row_id = row['id']
 
